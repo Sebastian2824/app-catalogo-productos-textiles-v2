@@ -1,0 +1,32 @@
+version = 1
+
+[[analyzers]]
+name = "cxx"
+
+[[analyzers]]
+name = "javascript"
+
+  [analyzers.meta]
+  plugins = [
+    "angularjs",
+    "meteor",
+    "ember",
+    "vue",
+    "react",
+    "angular"
+  ]
+  environment = [
+    "jquery",
+    "nodejs",
+    "browser",
+    "mongo",
+    "jest",
+    "cypress",
+    "mocha",
+    "vitest",
+    "jasmine"
+  ]
+
+[[analyzers]]
+name = "dart-analyze"
+type = "community"
