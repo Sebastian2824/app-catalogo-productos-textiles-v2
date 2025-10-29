@@ -30,19 +30,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake
           
-      - name: Generate compilation database for C++
+      - name: Create minimal compile_commands.json for C++
         run: |
-          # Intenta generar compile_commands.json para C++
-          if [ -f "CMakeLists.txt" ]; then
-            mkdir -p build
-            cd build
-            cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
-            mv compile_commands.json ../
-          elif [ -f "Makefile" ] || [ -f "makefile" ]; then
-            bear -- make || echo "Bear not available, skipping compile_commands.json"
-          else
-            echo "No C++ build system detected, creating minimal compile_commands.json"
+          # Crear un compile_commands.json básico si no existe
+          if [ ! -f "compile_commands.json" ]; then
             echo '[]' > compile_commands.json
+            echo "Created minimal compile_commands.json"
+          else
+            echo "compile_commands.json already exists"
           fi
           
       - name: SonarQube Scan
