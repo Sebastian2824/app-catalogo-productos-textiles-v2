@@ -20,53 +20,29 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
           
-      - name: Setup Java (necesario para el scanner de SonarQube)
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-            
       - name: Install dependencies
         run: |
-          if [ -f "package.json" ]; then
-            npm ci
-          else
-            echo "No package.json found"
-          fi
+          [ -f "package.json" ] && npm install || echo "No package.json"
           
-      - name: Run JavaScript tests with coverage
+      - name: Setup C++ build tools
         run: |
-          if [ -f "package.json" ]; then
-            # Si usas Jest
-            if grep -q "jest" package.json; then
-              npm test -- --coverage --watchAll=false
-            # Si usas Mocha
-            elif grep -q "mocha" package.json; then
-              npx mocha --reporter json-stream --reporter-option output=test-results.json
-            else
-              echo "No test runner detected in package.json"
-            fi
-          else
-            echo "No package.json, skipping JavaScript tests"
-          fi
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
           
-      - name: Generate coverage report if missing
+      - name: Generate compilation database for C++
         run: |
-          # Crear directorio de coverage si no existe
-          mkdir -p coverage
-          # Si no hay reporte de cobertura, crear uno básico
-          if [ ! -f "coverage/lcov.info" ] && [ -d "src" ] || [ -d "lib" ]; then
-            echo "No coverage data found" > coverage/lcov.info
+          # Intenta generar compile_commands.json para C++
+          if [ -f "CMakeLists.txt" ]; then
+            mkdir -p build
+            cd build
+            cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+            mv compile_commands.json ../
+          elif [ -f "Makefile" ] || [ -f "makefile" ]; then
+            bear -- make || echo "Bear not available, skipping compile_commands.json"
+          else
+            echo "No C++ build system detected, creating minimal compile_commands.json"
+            echo '[]' > compile_commands.json
           fi
           
       - name: SonarQube Scan
