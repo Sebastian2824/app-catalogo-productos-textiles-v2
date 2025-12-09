@@ -16,6 +16,6 @@
     "firebase-tools": "^14.9.0"
   },
   "dependencies": {
-    "nodemailer": "^7.0.4"
+    "nodemailer": "^7.0.11"
   }
 }
